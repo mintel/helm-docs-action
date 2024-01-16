@@ -97,4 +97,3 @@ To enable you need to ensure a few things first:
     working-dir: mychart1,mychart2,mychart3
     git-push: "true"
 ```
-

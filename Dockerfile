@@ -1,11 +1,7 @@
 # Use a clean tiny image to store artifacts in
 FROM alpine
 
-# Copy all needed files
-COPY entrypoint.sh /
-RUN chmod +x /entrypoint.sh
-
-RUN echo "http://dl-4.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories
+#RUN echo "http://dl-4.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories
 
 RUN set -x \
     && apk update \
@@ -21,4 +17,8 @@ RUN set -x \
 RUN wget https://github.com/norwoodj/helm-docs/releases/download/v1.11.0/helm-docs_1.11.0_Linux_x86_64.tar.gz && \
     tar -xvf helm-docs_1.11.0_Linux_x86_64.tar.gz  && mv helm-docs /usr/local/bin/ &&  chmod +x /usr/local/bin/helm-docs
 
+# Copy all needed files
+COPY entrypoint.sh /entrypoint.sh
+
 ENTRYPOINT ["/entrypoint.sh"]
+CMD []
