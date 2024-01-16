@@ -78,7 +78,7 @@ update_doc() {
     working_dir="$1"
     echo "::debug working_dir=${working_dir}"
 
-    helm-docs --chart-to-generate ${working_dir}
+    helm-docs --chart-search-root ${working_dir}
     success=$?
 
     if [ $success -ne 0 ]; then
