@@ -19,74 +19,73 @@ set -o errexit
 set -o pipefail
 set -o errtrace
 
-
 if [ -z "${INPUT_GIT_PUSH_USER_NAME}" ]; then
-    INPUT_GIT_PUSH_USER_NAME="github-actions[bot]"
+	INPUT_GIT_PUSH_USER_NAME="github-actions[bot]"
 fi
 
 if [ -z "${INPUT_GIT_PUSH_USER_EMAIL}" ]; then
-    INPUT_GIT_PUSH_USER_EMAIL="github-actions[bot]@users.noreply.github.com"
+	INPUT_GIT_PUSH_USER_EMAIL="github-actions[bot]@users.noreply.github.com"
 fi
 
 git_setup() {
-    # When the runner maps the $GITHUB_WORKSPACE mount, it is owned by the runner
-    # user while the created folders are owned by the container user, causing this
-    # error. Issue description here: https://github.com/actions/checkout/issues/766
-    git config --global --add safe.directory /github/workspace
+	# When the runner maps the $GITHUB_WORKSPACE mount, it is owned by the runner
+	# user while the created folders are owned by the container user, causing this
+	# error. Issue description here: https://github.com/actions/checkout/issues/766
+	git config --global --add safe.directory /github/workspace
 
-    git config --global user.name "${INPUT_GIT_PUSH_USER_NAME}"
-    git config --global user.email "${INPUT_GIT_PUSH_USER_EMAIL}"
-    git fetch --depth=1 origin +refs/tags/*:refs/tags/* || true
+	git config --global user.name "${INPUT_GIT_PUSH_USER_NAME}"
+	git config --global user.email "${INPUT_GIT_PUSH_USER_EMAIL}"
+	git fetch --depth=1 origin +refs/tags/*:refs/tags/* || true
 }
 
 git_add() {
-    local file
-    file="$1"
-    git add "${file}"
-    if [ "$(git status --porcelain | grep "$file" | grep -c -E '([MA]\W).+')" -eq 1 ]; then
-        echo "::debug Added ${file} to git staging area"
-    else
-        echo "::debug No change in ${file} detected"
-    fi
+	local file
+	file="$1"
+	git add "${file}"
+	if [ "$(git status --porcelain | grep "$file" | grep -c -E '([MA]\W).+')" -eq 1 ]; then
+		echo "::debug Added ${file} to git staging area"
+	else
+		echo "::debug No change in ${file} detected"
+	fi
 }
 
 git_num_changed() {
-    git status --porcelain | grep -c -E '([MA]\W).+' || true
+	git status --porcelain | grep -c -E '([MA]\W).+' || true
 }
 
 git_commit() {
-    if [ "$(git_num_changed)" -eq 0 ]; then
-        echo "::debug No files changed, skipping commit"
-        exit 0
-    fi
+	if [ "$(git_num_changed)" -eq 0 ]; then
+		echo "::debug No files changed, skipping commit"
+		exit 0
+	fi
 
-    echo "::debug Following files will be committed"
-    git status -s
+	echo "::debug Following files will be committed"
+	git status -s
 
-    local args=(
-        -m "${INPUT_GIT_COMMIT_MESSAGE}"
-    )
+	local args=(
+		-m "${INPUT_GIT_COMMIT_MESSAGE}"
+	)
 
-    if [ "${INPUT_GIT_PUSH_SIGN_OFF}" = "true" ]; then
-        args+=("-s")
-    fi
+	if [ "${INPUT_GIT_PUSH_SIGN_OFF}" = "true" ]; then
+		args+=("-s")
+	fi
 
-    git commit "${args[@]}"
+	git commit "${args[@]}"
 }
 
 update_doc() {
-    local working_dir
-    working_dir="$1"
-    echo "::debug working_dir=${working_dir}"
+	local working_dir
+	working_dir="$1"
+	echo "::debug working_dir=${working_dir}"
 
-    helm-docs --chart-search-root "${working_dir}"
-    success=$?
+	helm-docs --chart-search-root "${working_dir}"
+	success=$?
 
-    if [  $success -eq 0 ]; then
-        git_add "${working_dir}/${OUTPUT_FILE}"
-    fi
+	if [ $success -eq 0 ]; then
+		git_add "${working_dir}/${OUTPUT_FILE}"
+	fi
 
-    exit $success
+	exit $success
 }
 
 # go to github repo
@@ -94,35 +93,33 @@ cd "${GITHUB_WORKSPACE}"
 
 git_setup
 
-
 if [ -n "${INPUT_CHART}" ]; then
-  for project_dir in ${INPUT_CHART} ; do
-      update_doc "${project_dir}"
-    done
+	for project_dir in ${INPUT_CHART}; do
+		update_doc "${project_dir}"
+	done
 fi
-  if  [ -n "${INPUT_WORKING_DIR}" ]; then
-    #Split INPUT_WORKING_DIR by commas
-    for project_dir in ${INPUT_WORKING_DIR//,/ }; do
-        update_doc "${project_dir}"
-    done
-  fi
-
+if [ -n "${INPUT_WORKING_DIR}" ]; then
+	#Split INPUT_WORKING_DIR by commas
+	for project_dir in ${INPUT_WORKING_DIR//,/ }; do
+		update_doc "${project_dir}"
+	done
+fi
 
 # always set num_changed output
 set +e
 num_changed=$(git_num_changed)
 set -e
-echo "num_changed=${num_changed}" >> "$GITHUB_OUTPUT"
+echo "num_changed=${num_changed}" >>"$GITHUB_OUTPUT"
 
 if [ "${INPUT_GIT_PUSH}" = "true" ]; then
-    git_commit
-    git push
+	git_commit
+	git push
 else
-    if [ "${INPUT_FAIL_ON_DIFF}" = "true" ] && [ "${num_changed}" -ne 0 ]; then
-        echo "::error ::Uncommitted change(s) has been found!"
-        git diff --cached
-        exit 1
-    fi
+	if [ "${INPUT_FAIL_ON_DIFF}" = "true" ] && [ "${num_changed}" -ne 0 ]; then
+		echo "::error ::Uncommitted change(s) has been found!"
+		git diff --cached
+		exit 1
+	fi
 fi
 
 exit 0
