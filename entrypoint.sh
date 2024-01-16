@@ -119,6 +119,7 @@ if [ "${INPUT_GIT_PUSH}" = "true" ]; then
 else
     if [ "${INPUT_FAIL_ON_DIFF}" = "true" ] && [ "${num_changed}" -ne 0 ]; then
         echo "::error ::Uncommitted change(s) has been found!"
+        git diff --cached
         exit 1
     fi
 fi
