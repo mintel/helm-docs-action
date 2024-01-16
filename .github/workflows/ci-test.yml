@@ -5,7 +5,7 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write  
+  pull-requests: write
 
 jobs:
   docs:
@@ -18,13 +18,13 @@ jobs:
     - uses: actions/checkout@v3
       with:
         ref: ${{ github.event.pull_request.head.ref }}
-        
+
     - name: Helm create
       run: |
         helm create test
         helm create test1
         helm create test2
-        mkdir dir 
+        mkdir dir
         helm create dir/test4
 
     - name: Render helm docs singal
@@ -44,4 +44,3 @@ jobs:
       with:
         working-dir: dir/test4
         git-push: "true"
-
