@@ -78,7 +78,7 @@ update_doc() {
     working_dir="$1"
     echo "::debug working_dir=${working_dir}"
 
-    helm-docs --chart-search-root ${working_dir}
+    helm-docs --chart-search-root "${working_dir}"
     success=$?
 
     if [ $success -ne 0 ]; then
@@ -114,7 +114,7 @@ fi
 set +e
 num_changed=$(git_status)
 set -e
-echo "num_changed=${num_changed}" >> $GITHUB_OUTPUT
+echo "num_changed=${num_changed}" >> "$GITHUB_OUTPUT"
 
 if [ "${INPUT_GIT_PUSH}" = "true" ]; then
     git_commit
