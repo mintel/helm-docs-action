@@ -56,7 +56,7 @@ git_num_changed() {
 git_commit() {
 	if [ "$(git_num_changed)" -eq 0 ]; then
 		echo "::debug No files changed, skipping commit"
-		exit 0
+		return 0
 	fi
 
 	echo "::debug Following files will be committed"
@@ -85,7 +85,7 @@ update_doc() {
 		git_add "${working_dir}/${OUTPUT_FILE}"
 	fi
 
-	exit $success
+	return $success
 }
 
 # go to github repo
