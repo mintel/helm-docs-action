@@ -50,12 +50,12 @@ git_add() {
     fi
 }
 
-git_status() {
+git_num_changed() {
     git status --porcelain | grep -c -E '([MA]\W).+' || true
 }
 
 git_commit() {
-    if [ "$(git_status)" -eq 0 ]; then
+    if [ "$(git_num_changed)" -eq 0 ]; then
         echo "::debug No files changed, skipping commit"
         exit 0
     fi
@@ -110,7 +110,7 @@ fi
 
 # always set num_changed output
 set +e
-num_changed=$(git_status)
+num_changed=$(git_num_changed)
 set -e
 echo "num_changed=${num_changed}" >> "$GITHUB_OUTPUT"
 
