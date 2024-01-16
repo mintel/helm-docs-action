@@ -81,14 +81,11 @@ update_doc() {
     helm-docs --chart-search-root "${working_dir}"
     success=$?
 
-    if [ $success -ne 0 ]; then
-        exit $success
-    fi
-
     if [  $success -eq 0 ]; then
         git_add "${working_dir}/${OUTPUT_FILE}"
     fi
 
+    exit $success
 }
 
 # go to github repo
